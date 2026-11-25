@@ -1,13 +1,128 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="apple-mobile-web-app-capable" content="yes"><title>レジ | POS</title><style>
-*{box-sizing:border-box}body{margin:0;background:#f3f5f7;color:#203038;font:16px system-ui,sans-serif}header{background:#173d36;color:white;padding:18px 24px;display:flex;justify-content:space-between;align-items:center}h1,h2,p{margin:0}h1{font-size:24px}button{font:inherit;cursor:pointer;touch-action:manipulation;border:0;border-radius:12px;padding:14px;background:#e8eeec;color:#173d36;font-weight:700}button:disabled{opacity:.4;cursor:default}main{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;padding:18px;max-width:1400px;margin:auto}.panel{background:white;border-radius:18px;padding:20px;box-shadow:0 2px 12px #00000009}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.active,.primary{background:#176b52;color:white}.menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}.item{min-height:110px;text-align:left;background:#f1f5f3;display:grid;align-content:space-between;gap:12px}.item span{font-size:22px}.cartrow{display:grid;grid-template-columns:1fr auto;gap:10px;padding:15px 0;border-bottom:1px solid #e5e9e8}.qty{display:flex;gap:8px;align-items:center}.qty button{min-width:44px;padding:10px}.muted{color:#687873;font-size:14px}.total{display:flex;justify-content:space-between;align-items:center;font-size:23px;font-weight:bold;padding:22px 0}.wide{width:100%;min-height:56px}.secondary{margin-top:10px}.empty{padding:36px 0;text-align:center;color:#687873}dialog{border:0;border-radius:20px;padding:24px;width:min(92vw,480px);max-height:88vh;overflow:auto;box-shadow:0 12px 60px #0004}dialog::backdrop{background:#0007}input{width:100%;padding:14px;border:1px solid #a8b5b0;border-radius:10px;font:inherit;font-size:24px;margin:10px 0}label{display:block;margin-top:12px}.receipt{white-space:pre-wrap;font:16px ui-monospace,monospace;background:#f5f5f5;padding:16px;margin:16px 0}.methods{display:flex;gap:8px;margin:14px 0}.methods button{flex:1}#status{padding:10px 24px;color:#a23b21}#status:empty{display:none}@media(max-width:700px){main{grid-template-columns:1fr;padding:10px}.panel{padding:14px}}@media print{body>*:not(#receiptDialog){display:none!important}#receiptDialog{position:static;width:100%;max-height:none;box-shadow:none}#receiptDialog button,#receiptDialog h2{display:none}.receipt{background:white}}
-</style></head><body><header><div><h1>レジ / POS</h1><small>サンプル店舗</small></div><button id="historyBtn">売上履歴</button></header><div id="status" role="alert"></div><main><section class="panel"><h2>メニュー</h2><p class="muted">商品をタップして追加</p><div class="tabs" id="tabs"></div><div class="menu" id="menu"></div></section><section class="panel"><h2>ご注文 <small class="muted" id="count"></small></h2><div id="cart"></div><div class="total"><span>合計（税込）</span><span id="total">¥0</span></div><button class="primary wide" id="checkout">お会計</button><button class="wide secondary" id="clear">注文をクリア</button></section></main>
-<dialog id="pay"><h2>お会計</h2><div class="total"><span>合計</span><span id="due"></span></div><div class="methods"><button id="cash" class="active">現金</button><button id="card">キャッシュレス</button></div><div id="cashFields"><label for="received">お預かり金額</label><input id="received" type="number" inputmode="numeric" min="0" step="1" placeholder="0"><button id="exact">ちょうど</button><div class="total"><span>お釣り</span><span id="change">—</span></div></div><p class="muted" id="cardNote" hidden>外部端末で決済が完了してから登録してください。</p><button id="register" class="primary wide">会計を登録</button><button class="wide secondary" onclick="pay.close()">戻る</button></dialog>
-<dialog id="receiptDialog"><h2>会計完了</h2><div class="receipt" id="receipt"></div><button class="primary wide" onclick="window.print()">レシート印刷</button><button class="wide secondary" onclick="receiptDialog.close()">次のお客様</button></dialog><dialog id="history"><h2>売上履歴</h2><div class="total"><span>本日の売上</span><span id="daily"></span></div><div id="sales"></div><button class="wide secondary" id="export">CSV出力（全件）</button><button class="wide secondary" onclick="historyDialog.close()">閉じる</button></dialog>
-<script>
-const products=[{id:1,name:'コーヒー',price:400,cat:'ドリンク'},{id:2,name:'カフェラテ',price:500,cat:'ドリンク'},{id:3,name:'紅茶',price:350,cat:'ドリンク'},{id:4,name:'カレー',price:850,cat:'フード'},{id:5,name:'サンドイッチ',price:650,cat:'フード'},{id:6,name:'パスタ',price:950,cat:'フード'},{id:7,name:'チーズケーキ',price:550,cat:'デザート'},{id:8,name:'プリン',price:380,cat:'デザート'}];
-const $=id=>document.getElementById(id), yen=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY'}).format(n);const pay=$('pay'),receiptDialog=$('receiptDialog'),historyDialog=$('history');let cart={},category='すべて',method='現金',sales=[];let storageOK=true;try{sales=JSON.parse(localStorage.getItem('ipad-pos-sales-v1')||'[]');if(!Array.isArray(sales))throw Error();}catch(e){storageOK=false;$('status').textContent='売上履歴を読み込めません。登録を停止しました。';}
-const lines=()=>products.filter(p=>cart[p.id]>0).map(p=>({...p,qty:cart[p.id]}));const total=()=>lines().reduce((s,p)=>s+p.price*p.qty,0);function render(){ $('tabs').replaceChildren();for(const c of ['すべて',...new Set(products.map(p=>p.cat))]){const b=document.createElement('button');b.textContent=c;b.className=c===category?'active':'';b.onclick=()=>{category=c;render()};$('tabs').append(b)}$('menu').replaceChildren();for(const p of products.filter(p=>category==='すべて'||p.cat===category)){const b=document.createElement('button');b.className='item';b.innerHTML=`${p.name}<span>${yen(p.price)}</span>`;b.onclick=()=>{cart[p.id]=(cart[p.id]||0)+1;render()};$('menu').append(b)}$('cart').replaceChildren();if(!lines().length){$('cart').innerHTML='<p class="empty">商品が選択されていません</p>'}for(const p of lines()){const r=document.createElement('div');r.className='cartrow';r.innerHTML=`<div><strong>${p.name}</strong><div class="muted">${yen(p.price)} × ${p.qty} = ${yen(p.price*p.qty)}</div></div><div class="qty"><button aria-label="${p.name}を減らす">−</button><strong>${p.qty}</strong><button aria-label="${p.name}を増やす">＋</button></div>`;const [minus,plus]=r.querySelectorAll('button');minus.onclick=()=>{cart[p.id]--;if(!cart[p.id])delete cart[p.id];render()};plus.onclick=()=>{cart[p.id]++;render()};$('cart').append(r)}$('count').textContent=lines().reduce((s,p)=>s+p.qty,0)+' 点';$('total').textContent=yen(total());$('checkout').disabled=!total()||!storageOK;$('clear').disabled=!total()}
-function updatePay(){const n=Number($('received').value),valid=$('received').value!==''&&Number.isSafeInteger(n)&&n>=total();$('change').textContent=valid?yen(n-total()):'—';$('register').disabled=!storageOK||!total()||(method==='現金'&&!valid);$('cashFields').hidden=method!=='現金';$('cardNote').hidden=method==='現金';$('cash').className=method==='現金'?'active':'';$('card').className=method==='現金'?'':'active'}$('checkout').onclick=()=>{method='現金';$('received').value='';$('due').textContent=yen(total());updatePay();pay.showModal()};$('cash').onclick=()=>{method='現金';updatePay()};$('card').onclick=()=>{method='キャッシュレス';updatePay()};$('received').oninput=updatePay;$('exact').onclick=()=>{$('received').value=total();updatePay()};$('clear').onclick=()=>{if(confirm('注文をクリアしますか？')){cart={};render()}};
-$('register').onclick=()=>{updatePay();if($('register').disabled)return;const sale={id:'POS-'+Date.now(),date:new Date().toISOString(),items:lines(),total:total(),method,received:method==='現金'?Number($('received').value):null,change:method==='現金'?Number($('received').value)-total():null};try{localStorage.setItem('ipad-pos-sales-v1',JSON.stringify([...sales,sale]))}catch(e){$('status').textContent='保存できませんでした。会計は未登録です。';alert('売上を保存できませんでした。');return}sales.push(sale);$('receipt').textContent=['サンプル店舗',sale.id,new Date(sale.date).toLocaleString('ja-JP'),'----------------',...sale.items.map(p=>`${p.name} × ${p.qty}  ${yen(p.price*p.qty)}`),'----------------','合計（税込） '+yen(sale.total),sale.method,...(sale.received===null?[]:['お預かり '+yen(sale.received),'お釣り '+yen(sale.change)]),'ありがとうございました'].join('\n');cart={};pay.close();render();receiptDialog.showModal()};
-$('historyBtn').onclick=()=>{const today=new Date().toLocaleDateString('ja-JP');$('daily').textContent=yen(sales.filter(s=>new Date(s.date).toLocaleDateString('ja-JP')===today).reduce((a,s)=>a+s.total,0));$('sales').replaceChildren();if(!sales.length)$('sales').textContent='売上はまだありません';for(const s of [...sales].reverse()){const d=document.createElement('div');d.className='cartrow';d.textContent=new Date(s.date).toLocaleString('ja-JP')+' / '+s.method+' / '+yen(s.total);$('sales').append(d)}historyDialog.showModal()};$('export').onclick=()=>{const rows=[['ID','日時','商品','数量','単価','小計','支払方法'],...sales.flatMap(s=>s.items.map(p=>[s.id,s.date,p.name,p.qty,p.price,p.price*p.qty,s.method]))];const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='pos-sales.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};render();
-</script></body></html>
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1" />
+		<meta
+			name="apple-mobile-web-app-capable"
+			content="yes" />
+		<title>レジ | POS</title>
+    <link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<header>
+			<div>
+				<h1>Cafe tayo</h1>
+				<small>サンプル店舗</small>
+			</div>
+			<button id="historyBtn">売上履歴</button>
+		</header>
+		<div
+			id="status"
+			role="alert"></div>
+		<main>
+			<section class="panel">
+				<h2>メニュー</h2>
+				<p class="muted">商品をタップして追加</p>
+				<div
+					class="tabs"
+					id="tabs"></div>
+				<div
+					class="menu"
+					id="menu"></div>
+			</section>
+			<section class="panel">
+				<h2>
+					ご注文
+					<small
+						class="muted"
+						id="count"></small>
+				</h2>
+				<div id="cart"></div>
+				<div class="total">
+					<span>合計（税込）</span><span id="total">¥0</span>
+				</div>
+				<button
+					class="primary wide"
+					id="checkout">
+					お会計</button
+				><button
+					class="wide secondary"
+					id="clear">
+					注文をクリア
+				</button>
+			</section>
+		</main>
+		<dialog id="pay">
+			<h2>お会計</h2>
+			<div class="total"><span>合計</span><span id="due"></span></div>
+			<div class="methods">
+				<button
+					id="cash"
+					class="active">
+					現金</button
+				><button id="card">キャッシュレス</button>
+			</div>
+			<div id="cashFields">
+				<label for="received">お預かり金額</label
+				><input
+					id="received"
+					type="number"
+					inputmode="numeric"
+					min="0"
+					step="1"
+					placeholder="0" /><button id="exact">ちょうど</button>
+				<div class="total"><span>お釣り</span><span id="change">—</span></div>
+			</div>
+			<p
+				class="muted"
+				id="cardNote"
+				hidden>
+				外部端末で決済が完了してから登録してください。
+			</p>
+			<button
+				id="register"
+				class="primary wide">
+				会計を登録</button
+			><button
+				class="wide secondary"
+				onclick="pay.close()">
+				戻る
+			</button>
+		</dialog>
+		<dialog id="receiptDialog">
+			<h2>会計完了</h2>
+			<div
+				class="receipt"
+				id="receipt"></div>
+			<button
+				class="primary wide"
+				onclick="window.print()">
+				レシート印刷</button
+			><button
+				class="wide secondary"
+				onclick="receiptDialog.close()">
+				次のお客様
+			</button>
+		</dialog>
+		<dialog id="history">
+			<h2>売上履歴</h2>
+			<div class="total"><span>本日の売上</span><span id="daily"></span></div>
+			<div id="sales"></div>
+			<button
+				class="wide secondary"
+				id="export">
+				CSV出力（全件）</button
+			><button
+				class="wide secondary"
+				onclick="historyDialog.close()">
+				閉じる
+			</button>
+		</dialog>
+		<script src="script.js">
+			
+		</script>
+	</body>
+</html>

@@ -1,0 +1,199 @@
+* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+				background: #f3f5f7;
+				color: #203038;
+				font:
+					16px system-ui,
+					sans-serif;
+			}
+			header {
+				background: #173d36;
+				color: white;
+				padding: 18px 24px;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+			h1,
+			h2,
+			p {
+				margin: 0;
+			}
+			h1 {
+				font-size: 24px;
+			}
+			button {
+				font: inherit;
+				cursor: pointer;
+				touch-action: manipulation;
+				border: 0;
+				border-radius: 12px;
+				padding: 14px;
+				background: #e8eeec;
+				color: #173d36;
+				font-weight: 700;
+			}
+			button:disabled {
+				opacity: 0.4;
+				cursor: default;
+			}
+			main {
+				display: grid;
+				grid-template-columns: 1.4fr 1fr;
+				gap: 18px;
+				padding: 18px;
+				max-width: 1400px;
+				margin: auto;
+			}
+			.panel {
+				background: white;
+				border-radius: 18px;
+				padding: 20px;
+				box-shadow: 0 2px 12px #00000009;
+			}
+			.tabs {
+				display: flex;
+				gap: 8px;
+				flex-wrap: wrap;
+				margin: 18px 0;
+			}
+			.active,
+			.primary {
+				background: #176b52;
+				color: white;
+			}
+			.menu {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+				gap: 12px;
+			}
+			.item {
+				min-height: 110px;
+				text-align: left;
+				background: #f1f5f3;
+				display: grid;
+				align-content: space-between;
+				gap: 12px;
+			}
+			.item span {
+				font-size: 22px;
+			}
+			.cartrow {
+				display: grid;
+				grid-template-columns: 1fr auto;
+				gap: 10px;
+				padding: 15px 0;
+				border-bottom: 1px solid #e5e9e8;
+			}
+			.qty {
+				display: flex;
+				gap: 8px;
+				align-items: center;
+			}
+			.qty button {
+				min-width: 44px;
+				padding: 10px;
+			}
+			.muted {
+				color: #687873;
+				font-size: 14px;
+			}
+			.total {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				font-size: 23px;
+				font-weight: bold;
+				padding: 22px 0;
+			}
+			.wide {
+				width: 100%;
+				min-height: 56px;
+			}
+			.secondary {
+				margin-top: 10px;
+			}
+			.empty {
+				padding: 36px 0;
+				text-align: center;
+				color: #687873;
+			}
+			dialog {
+				border: 0;
+				border-radius: 20px;
+				padding: 24px;
+				width: min(92vw, 480px);
+				max-height: 88vh;
+				overflow: auto;
+				box-shadow: 0 12px 60px #0004;
+			}
+			dialog::backdrop {
+				background: #0007;
+			}
+			input {
+				width: 100%;
+				padding: 14px;
+				border: 1px solid #a8b5b0;
+				border-radius: 10px;
+				font: inherit;
+				font-size: 24px;
+				margin: 10px 0;
+			}
+			label {
+				display: block;
+				margin-top: 12px;
+			}
+			.receipt {
+				white-space: pre-wrap;
+				font:
+					16px ui-monospace,
+					monospace;
+				background: #f5f5f5;
+				padding: 16px;
+				margin: 16px 0;
+			}
+			.methods {
+				display: flex;
+				gap: 8px;
+				margin: 14px 0;
+			}
+			.methods button {
+				flex: 1;
+			}
+			#status {
+				padding: 10px 24px;
+				color: #a23b21;
+			}
+			#status:empty {
+				display: none;
+			}
+			@media (max-width: 700px) {
+				main {
+					grid-template-columns: 1fr;
+					padding: 10px;
+				}
+				.panel {
+					padding: 14px;
+				}
+			}
+			@media print {
+				body > *:not(#receiptDialog) {
+					display: none !important;
+				}
+				#receiptDialog {
+					position: static;
+					width: 100%;
+					max-height: none;
+					box-shadow: none;
+				}
+				#receiptDialog button,
+				#receiptDialog h2 {
+					display: none;
+				}
+				.receipt {
+					background: white;
+				}
+			}
