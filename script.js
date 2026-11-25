@@ -1,8 +1,8 @@
 const products = [
 	{ id: 1, name: "アメリカーノ", price: 400, cat: "ドリンク" },
 	{ id: 2, name: "カフェラテ", price: 500, cat: "ドリンク" },
-	{ id: 3, name: "スパニッシュラテ", price: 350, cat: "ドリンク" },
-	{ id: 4, name: "キャラメルラテ", price: 850, cat: "ドリンク" },
+	{ id: 3, name: "スパニッシュラテ", price: 550, cat: "ドリンク" },
+	{ id: 4, name: "キャラメルラテ", price: 550, cat: "ドリンク" },
 	{ id: 5, name: "チョコバナナマフィン", price: 250, cat: "パン" },
 	{ id: 6, name: "チーズエンサイマーダ", price: 350, cat: "パン" },
 	{ id: 7, name: "シナモンロール", price: 350, cat: "パン" },
