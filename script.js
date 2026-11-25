@@ -3,11 +3,12 @@ const products = [
 	{ id: 2, name: "カフェラテ", price: 500, cat: "ドリンク" },
 	{ id: 3, name: "スパニッシュラテ", price: 350, cat: "ドリンク" },
 	{ id: 4, name: "キャラメルラテ", price: 850, cat: "ドリンク" },
-	{ id: 5, name: "チョコバナナマフィン", price: 650, cat: "パン" },
-	{ id: 6, name: "チーズエンサイマーダ", price: 950, cat: "パン" },
-	{ id: 7, name: "シナモンロール", price: 550, cat: "パン" },
-	{ id: 8, name: "ウベロール", price: 380, cat: "パン" },
-	{ id: 9, name: "ウベバスクチーズケーキ", price: 380, cat: "デザート" },
+	{ id: 5, name: "チョコバナナマフィン", price: 250, cat: "パン" },
+	{ id: 6, name: "チーズエンサイマーダ", price: 350, cat: "パン" },
+	{ id: 7, name: "シナモンロール", price: 350, cat: "パン" },
+	{ id: 8, name: "ウベロール", price: 350, cat: "パン" },
+	{ id: 9, name: "ウベバスクチーズケーキ", price: 500, cat: "デザート" },
+	{ id: 10, name: "イェマケーキ", price: 600, cat: "デザート" },
 ];
 const $ = (id) => document.getElementById(id),
 	yen = (n) =>
