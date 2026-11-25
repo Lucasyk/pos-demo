@@ -7,8 +7,9 @@ const products = [
 	{ id: 6, name: "チーズエンサイマーダ", price: 350, cat: "パン" },
 	{ id: 7, name: "シナモンロール", price: 350, cat: "パン" },
 	{ id: 8, name: "ウベロール", price: 350, cat: "パン" },
-	{ id: 9, name: "ウベバスクチーズケーキ", price: 500, cat: "デザート" },
-	{ id: 10, name: "イェマケーキ", price: 600, cat: "デザート" },
+	{ id: 9, name: "ウベチーズパンデサル", price: 200, cat: "パン" },
+	{ id: 10, name: "ウベバスクチーズケーキ", price: 500, cat: "デザート" },
+	{ id: 11, name: "イェマケーキ", price: 600, cat: "デザート" },
 ];
 const $ = (id) => document.getElementById(id),
 	yen = (n) =>
