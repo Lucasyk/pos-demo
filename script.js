@@ -146,7 +146,7 @@ $("register").onclick = () => {
 	}
 	sales.push(sale);
 	$("receipt").textContent = [
-		"サンプル店舗",
+		"Cafe Tayo",
 		sale.id,
 		new Date(sale.date).toLocaleString("ja-JP"),
 		"----------------",
@@ -157,7 +157,7 @@ $("register").onclick = () => {
 		...(sale.received === null
 			? []
 			: ["お預かり " + yen(sale.received), "お釣り " + yen(sale.change)]),
-		"ありがとうございました",
+		"ありがとうございました。温かいパンをお召し上がり下さい。",
 	].join("\n");
 	cart = {};
 	pay.close();
